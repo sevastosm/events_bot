@@ -7,8 +7,22 @@ const TextMessage = require("viber-bot").Message.Text;
 const winston = require("winston");
 const toYAML = require("winston-console-formatter");
 const isEmpty = require("lodash/isempty");
+const addUser = require("./controlers/users")
+const {bot_message,tracking_mesages}=require("./constans")s
+
+//logger
+function createLogger() {
+  const logger = new winston.Logger({
+    level: "debug", // We recommend using the debug level for development
+  });
+  logger.format.json()
+
+  logger.add(winston.transports.Console, toYAML.config());
+  return logger;
+}
+
 const logger = createLogger();
-const {bot_message,tracking_mesages}=require("./constans")
+
 
 // Creating the bot with access token, name and avatar
 const bot = new ViberBot(logger, {
@@ -17,17 +31,11 @@ const bot = new ViberBot(logger, {
   avatar: "http://www.apostolicchurch.gr/images/kifisia.jpg", // Just a placeholder avatar to display the user
 });
 
-//logger
-function createLogger() {
-  const logger = new winston.Logger({
-    level: "debug", // We recommend using the debug level for development
-  });
 
-  logger.add(winston.transports.Console, toYAML.config());
-  return logger;
-}
 
 function handleResponseToMessage(response, message) {
+
+  addUser()
   const userProfile = response.userProfile;
   // TD send the response needed based on message
   const sermonDate = "103";
@@ -100,7 +108,6 @@ if (!process.env.VIBER_PUBLIC_ACCOUNT_ACCESS_TOKEN_KEY) {
   logger.debug(
     "Could not find the Viber account access token key in your environment variable. Please make sure you followed readme guide."
   );
-  return;
 }
 
 // bot events
@@ -117,7 +124,7 @@ bot.onUnsubscribe(userId => console.log(`Unsubscribed: ${userId}`));
 
 //event 	Callback type - which event triggered the callback 	"conversation_started"
 bot.onConversationStarted((userProfile) =>
-console.log('userProfile',userProfile),
+logger.debug(userProfile)
 // if (!isSubscribed) add to firebase => promise
  //onFinish(new TextMessage(`ΚΑΛΩΣ ΗΡΘΑΤΕ ΓΙΑ ΚΡΑΤΗΣΗ ΠΛΗΚΤΡΟΛΟΓΗΣΤΕ 103`))
 );
